@@ -1,13 +1,17 @@
 import { create } from 'zustand'
-import type { DesignParams, PatternType } from '../types'
+import type { DesignParams, PatternType, Scheme } from '../types'
 import { THEMES } from '../themes/palettes'
 
 interface DesignStore extends DesignParams {
+  /** 最近一次套用的方案 id；当前参数与该方案不一致时卡片显示「已调整」 */
+  activeSchemeId: string | null
   svgContent: string
   setParam: <K extends keyof DesignParams>(key: K, value: DesignParams[K]) => void
   setPattern: (p: PatternType) => void
   setTheme: (id: string) => void
   randomSeed: () => void
+  applyScheme: (scheme: Scheme) => void
+  setActiveSchemeId: (id: string | null) => void
   setSvgContent: (s: string) => void
   exportSvg: () => void
   exportPng: () => void
@@ -22,17 +26,35 @@ export const useDesignStore = create<DesignStore>((set, get) => ({
   strokeWidth: 1.5,
   opacity: 0.8,
   bgColor: '#030712',
+  themeId: THEMES[0].id,
   palette: THEMES[0].colors,
   width: 800,
   height: 1000,
+  activeSchemeId: null,
   svgContent: '',
   setParam: (key, value) => set({ [key]: value } as any),
   setPattern: (p) => set({ pattern: p }),
   setTheme: (id) => {
     const theme = THEMES.find(t => t.id === id)
-    if (theme) set({ palette: theme.colors })
+    if (theme) set({ themeId: id, palette: theme.colors })
   },
   randomSeed: () => set({ seed: Math.floor(Math.random() * 99999) }),
+  applyScheme: (scheme) => {
+    const theme = THEMES.find(t => t.id === scheme.themeId)
+    set({
+      pattern: scheme.pattern,
+      themeId: scheme.themeId,
+      palette: theme ? theme.colors : get().palette,
+      seed: scheme.seed,
+      iterations: scheme.iterations,
+      scale: scheme.scale,
+      rotation: scheme.rotation,
+      strokeWidth: scheme.strokeWidth,
+      opacity: scheme.opacity,
+      activeSchemeId: scheme.id,
+    })
+  },
+  setActiveSchemeId: (id) => set({ activeSchemeId: id }),
   setSvgContent: (s) => set({ svgContent: s }),
   exportSvg: () => {
     const { svgContent } = get()

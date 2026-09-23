@@ -1,6 +1,7 @@
 import { useDesignStore } from '../store/design'
 import { THEMES } from '../themes/palettes'
 import type { PatternType } from '../types'
+import SchemePanel from './SchemePanel'
 
 const PATTERNS: { value: PatternType; label: string }[] = [
   { value: 'spiral',  label: '🌀 螺旋' },
@@ -36,7 +37,7 @@ export default function Sidebar() {
         <div className="grid grid-cols-2 gap-2">
           {THEMES.map(t => (
             <button key={t.id} onClick={() => store.setTheme(t.id)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600">
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${store.themeId===t.id?'bg-indigo-600 ring-1 ring-indigo-300':'bg-gray-700 hover:bg-gray-600'}`}>
               <div className="flex">{t.colors.map((c,i) => (
                 <div key={i} style={{background:c}} className="w-3 h-3 rounded-full" />
               ))}</div>
@@ -90,6 +91,9 @@ export default function Sidebar() {
         <input type="range" min={0.1} max={1} step={0.05} value={store.opacity}
           onChange={e => store.setParam('opacity', Number(e.target.value))} className="w-full accent-pink-500" />
       </div>
+
+      {/* Saved schemes */}
+      <SchemePanel />
 
       {/* Export */}
       <div className="flex gap-2 mt-2">
